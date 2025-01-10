@@ -108,31 +108,7 @@ stk[tt];
 
 
 
-## 队列
-
-###### 模板代码
-
-```c++
-int q[N],hh,tt=-1;
-
-//插入
-int x;
-q[++tt]=x;
-    
-//弹出
-hh++;
-    
-//判断为空
-if(hh<=tt){}
-else{}
-    
-//取队头元素
-q[tt];
-```
-
-
-
-## 单调栈
+### 单调栈
 
 ###### 模型
 
@@ -190,7 +166,31 @@ int main(){
 
 
 
-## 单调队列
+## 队列
+
+###### 模板代码
+
+```c++
+int q[N],hh,tt=-1;
+
+//插入
+int x;
+q[++tt]=x;
+    
+//弹出
+hh++;
+    
+//判断为空
+if(hh<=tt){}
+else{}
+    
+//取队头元素
+q[tt];
+```
+
+
+
+### 单调队列
 
 ###### 模型
 
@@ -293,5 +293,119 @@ int main(){
     
     return 0;
 }
+```
+
+
+
+## 树
+
+
+
+### Trie树
+
+###### 作用
+
+高效地存储和查找字符串集合的数据结构
+
+
+
+###### 原理
+
+建立一个前缀树
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=1e5+10;
+
+int son[N][26],cnt[N],idx; //下标为0的点既是空节点，又是根节点
+char str[N];
+
+void insert(char str[]){
+    int p=0;
+    for(int i=0;str[i];i++){
+        int u=str[i]-'a';
+        if(!son[p][u]) son[p][u]=++idx;
+        p=son[p][u];
+    }
+
+    cnt[p]++;
+}
+
+int query(char str[]){
+    int p=0;
+    for(int i=0;str[i];i++){
+        int u=str[i]-'a';
+        if(!son[p][u]) return 0;
+        p=son[p][u];
+    }
+
+    return cnt[p];
+}
+
+int main(){
+    int n;
+    scanf("%d",&n);
+
+    while(n--){
+        char op[2];
+        scanf("%s%s",op,str);
+        if(op[0]=='I') insert(str);
+        else printf("%d\n",query(str));
+    }
+
+    return 0;
+}
+```
+
+
+
+### 并查集
+
+###### 作用
+
+（1）将两个集合合并
+
+（2）询问两个元素是否在一个集合当中
+
+
+
+###### 原理
+
+暴力做法
+
+belong[x]=a  O(n)   比较耗时
+
+if(belong[x]==belong[y])  O(1)
+
+优化方法：
+
+用树的结构去维护集合，树根的编号就是集合的编号
+
+一个集合内每一个节点都配备一个父节点 p[x]
+
+（1）判断树根：if(p[x]==x)
+
+（2）如何求x的集合编号：while(p[x]!=x)
+
+（3）如何合并两个集合：p[x]=y
+
+优化：
+（1）求集合编号的时候，让搜索路径上的所有点指向根节点（路径压缩）
+
+（2）按值合并
+
+
+
+###### 模板代码
+
+```c++
+
 ```
 
