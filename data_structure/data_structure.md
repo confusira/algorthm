@@ -612,7 +612,7 @@ x在1-1e9之间，hash(x)在1-1e5之间
 
 hash(x)=x mod 1e5 在1-1e5之间
 
-冲突：拉链法和开放寻址法
+冲突解决：拉链法和开放寻址法
 
 操作：插入、查找和删除（往往是打标记）
 
@@ -620,5 +620,288 @@ hash(x)=x mod 1e5 在1-1e5之间
 
 （3）常用方法：字符串哈希方式
 
+
+
+### 拉链法
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+
+using namespace std;
+
+const int N=1e5+3;
+
+int h[N],e[N],ne[N],idx;
+
+void insert(int x){
+    int k=(x%N+N)%N;  //正整数
+
+    e[idx]=x;ne[idx]=h[k];h[k]=idx++;
+}
+
+bool find(int x){
+    int k=(x%N+N)%N;
+    for(int i=h[k];i!=-1;i=ne[i])
+        if(e[i]==x) return true;
+    
+    return false;
+}
+
+int main(){
+    int n;
+    scanf("%d",&n);
+
+    memset(h,-1,sizeof(h));
+
+    while(n--){
+        char op[2];
+        int x;
+        scanf("%s%d",op,&x);
+
+        if(*op=='i') insert(x);
+        else{
+            if(find(x)) puts("Yes");
+            else puts("No");
+        }
+    }
+
+    return 0;
+}
+```
+
+
+
 ### 开放寻址法
 
+往往数组大小要开到题目要求的两到三倍
+
+###### 模板代码
+
+```c++
+const int N=2*1e5+3,null=0x3f3f3f3f;
+int h[N];
+
+int find(int x){
+    int k=(x%N+N)%N;
+    
+    while(h[k]!=null && h[k]!=x){
+        k++;
+        if(k==N) k=0;
+    }
+
+    return k;
+}
+
+int main(){
+    int n;
+    scanf("%d",&n);
+
+    memset(h,0x3f,sizeof(h));  //按字节memset 整数有四个字节，0x3f3f3f3f
+
+    while(n--){
+        char op[2];
+        int x;
+        scanf("%s%d",op,&x);
+
+        int k=find(x);
+        if(*op=='i') h[k]=x;
+        else{
+            if(h[k]!=null) puts("Yes");
+            else puts("No");
+        }
+    }
+
+    return 0;
+}
+```
+
+
+
+### 字符串哈希方式
+
+###### 原理
+
+字符串前缀哈希方法
+
+将字符串所有的前缀转换成对应的哈希值（类似求前缀和）
+
+字符串的哈希值计算：将字符串看成一个P进制数，转换成一个十进制的数，然后通过取余将其映射到一个较小的区间
+
+注意：（1）不能映射到0  （2）不考虑冲突（p取131或13331，则q取2^64->用unsigned long long 去存储哈希值）
+$$
+h[i]=h[i-1]*p+str[i]
+$$
+然后，我们可以得到任意区间的字符串哈希值
+
+已知h[R],h[L-1],求h[L-R]
+$$
+h[L-R]=h[R]-h[L-1] * p^{R-L+1}
+$$
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+typedef unsigned long long ULL;
+
+const int N=1e5+10,P=131;
+
+int n,m;
+char str[N];
+ULL h[N],p[N];
+
+ULL get(int l,int r){
+    return h[r]-h[l-1]*p[r-l+1];
+}
+
+int main(){
+    scanf("%d%d%s",&n,&m,str+1);
+
+    p[0]=1;
+    for(int i=1;i<=n;i++){
+        p[i]=p[i-1]*P;
+        h[i]=h[i-1]*P+str[i];
+    }
+
+    while(m--){
+        int l1,l2,r1,r2;
+        scanf("%d%d%d%d",&l1,&r1,&l2,&r2);
+
+        if(get(l1,r1)==get(l2,r2)) puts("Yes");
+        else puts("No");
+    }
+
+    return 0;
+}
+```
+
+
+
+## STL容器
+
+### vector容器
+
+变长数组
+
+倍增的思想
+
+###### 模板代码
+
+```
+
+```
+
+
+
+
+
+### pair容器
+
+二元组
+
+###### 模板代码
+
+```
+
+```
+
+
+
+### string容器
+
+字符串
+
+###### 模板代码
+
+```
+substr() c_str()
+```
+
+
+
+### deque类容器
+
+#### deque容器
+
+双端队列
+
+###### 模板代码
+
+```
+
+```
+
+
+
+#### queue容器
+
+队列
+
+###### 模板代码
+
+```
+
+```
+
+
+
+#### priority_queue容器
+
+优先队列（堆）
+
+###### 模板代码
+
+```
+
+```
+
+
+
+### stack容器
+
+栈
+
+模板代码
+
+```
+
+```
+
+
+
+### set 和 map类容器
+
+#### set和map容器
+
+基于平衡二叉树（红黑树），动态维护有序序列
+
+
+
+#### multiset和multimap容器
+
+
+
+
+
+#### unordered_set和unordered_map容器
+
+基于哈希表
+
+
+
+#### unordered_multiset和unordered_multimap容器
+
+
+
+
+
+#### bitset容器
+
+压位
