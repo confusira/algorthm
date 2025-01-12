@@ -344,8 +344,470 @@ int main(){
 }
 ```
 
+
+
 #### 有向图的拓扑排序
+
+###### 原理
 
 有向无环图一定存在一个拓扑序列（拓扑图）
 
 入度和出度
+
+不停找入度为零的点，删边
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N =1e5+10;
+
+int n,m;
+int h[N],e[N],ne[N],idx;
+int q[N],d[N];
+
+void add(int a,int b){
+    e[idx]=b;ne[idx]=h[a];h[a]=idx++;
+}
+
+bool toposort(){
+    int hh=0,tt=-1;
+    for(int i=1;i<=n;i++){
+        if(d[i]==0) q[++tt]=i;
+    }
+
+    while(hh<=tt){
+        int t=q[hh++];
+
+        for(int i=h[t];i!=-1;i=ne[i]){
+            int j=e[i];
+            d[j]--;
+            if(d[j]==0) q[++tt]=j;
+        }
+    }
+    return tt==n-1;
+}
+
+int main(){
+    cin >> n >> m;
+
+    memset(h,-1,sizeof h);
+
+    for(int i=0;i<m;i++){
+        int a,b;
+        cin >> a >> b;
+        add(a,b);
+        d[b]++;
+    }
+
+    if(toposort()){
+        for(int i=0;i<n;i++){
+            printf("%d ",q[i]);
+            puts("");
+        }
+    }else puts("-1");
+
+    return 0;
+}
+```
+
+
+
+## 最短路
+
+可以分为单源最短路和多源汇最短路
+
+单源最短路分为所有边权均为正数和边权存在负数两种类型
+
+难点在于建图，将实际问题抽象成一个最短路问题
+
+### 单源最短路
+
+#### 所有边权均为正数
+
+##### 朴素Dijkstra算法
+
+###### 原理
+
+时间复杂度：O(n^2)
+
+适合稠密图，m与n^2相差不大  用邻接矩阵来存储
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N =510;
+
+int n,m;
+int g[N][N];
+int dist[N];
+bool st[N];
+
+int dijkstra(){
+    memset(dist,0x3f,sizeof dist);
+    dist[1]=0;
+
+    for(int i=0;i<n;i++){
+        int t=-1;
+        for(int j=1;j<=n;j++){
+            if(!st[j] && (t==-1||dist[t]>dist[j])) t=j;
+        }
+
+        st[t]=true;
+
+        for(int j=1;j<=n;j++) dist[j]=min(dist[j],dist[t]+g[t][j]);
+    }
+
+    if(dist[n]=0x3f3f3f3f) return -1;
+    return dist[n];
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    memset(g,0x3f,sizeof g);
+
+    while(m--){
+        int a,b,c;
+        scanf("%d%d%d",&a,&b,&c);
+        g[a][b]=min(g[a][b],c);
+    }
+
+    int t=dijkstra();
+
+    printf("%d\n",t);
+
+    return 0;
+}
+```
+
+
+
+##### 堆优化版的Dijkstra算法
+
+###### 原理
+
+时间复杂度：O(mlogn)
+
+适合稀疏图，即边数与点数差不多，m<=n   用邻接表来存储
+
+用堆来优化每次找寻最短边
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+#include<vector>
+#include<queue>
+
+using namespace std;
+
+typedef pair<int,int> PII;
+
+const int N=1e5+10;
+
+int n,m;
+int h[N],w[N],e[N],ne[N],idx;
+int dist[N];
+bool st[N];
+
+void add(int a,int b,int c){
+    e[idx]=b;w[idx]=c;ne[idx]=h[a];h[a]=idx++;
+}
+
+int dijkstra(){
+    memset(dist,0x3f,sizeof dist);
+    dist[1]=0;
+
+    priority_queue<PII,vector<PII>,greater<PII>> heap;
+    heap.push({0,1});
+
+    while(heap.size()){
+        auto t=heap.top();
+        heap.pop();
+
+        int ver=t.second,distance=t.first;
+        if(st[ver]) continue;
+
+        for(int i=h[ver];i!=-1;i=ne[i]){
+            int j=e[i];
+            if(dist[j] > distance+w[i]){
+                dist[j]=distance+w[i];
+                heap.push({dist[j],j});
+            }
+        }
+    }
+
+    if(dist[n]=0x3f3f3f3f) return -1;
+    return dist[n];
+}
+
+int main(){
+
+    scanf("%d%d",&n,&m);
+
+    memset(h,-1,sizeof h);
+
+    while(m--){
+        int a,b,c;
+        scanf("%d%d%d",&a,&b,&c);
+        add(a,b,c);
+    }
+	
+    int t=dijkstra();
+
+    printf("%d\n",t);
+
+    return 0;
+}
+```
+
+
+
+#### 存在负边权
+
+##### Bellman-Ford算法
+
+###### 原理
+
+时间复杂度：O(nm)
+
+负权环：存在负边且负边权和大于正边权和的环
+
+存在负权环不一定存在最短路
+
+迭代k次，能够找到边数不大于k的最短路
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N=510,M=1e4+10;
+
+int n,m,k;
+int dist[N],backup[N];
+
+struct Edge{
+    int a,b,w;
+}edges[M];
+
+int bellman_ford(){
+    memset(dist,0x3f,sizeof dist);
+    dist[1]=0;
+
+    for(int i=0;i<k;i++){
+        memcpy(backup,dist,sizeof dist);
+        for(int j=0;j<m;j++){
+            int a=edges[j].a,b=edges[j].b,w=edges[j].w;
+            dist[b]=min(dist[b],backup[a]+w);
+        }
+    }
+
+    if(dist[n]>0x3f3f3f3f/2) return -1;
+    return dist[n];
+}
+
+int main(){
+    scanf("%d%d%d",&n,&m,&k);
+
+    for(int i=0;i<m;i++){
+        int a,b,w;
+        scanf("%d%d%d",&a,&b,&w);
+        edges[i]={a,b,w};
+    }
+
+    int t=bellman_ford();
+
+    if(t==-1) puts("impossible");
+    else printf("%d\n",t);
+
+    return 0;
+}
+```
+
+
+
+##### SPFA算法
+
+###### 原理
+
+时间复杂度：一般 O(m)  最坏O(nm)
+
+优化方法：用宽度搜索方法去选择需要更新的边
+
+不适用场景：k边最短路、有负权环的图问题
+
+优化方法：用一个cnt数组去记录边数，当cnt>=n,说明存在负权环
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+#include<vector>
+#include<queue>
+
+using namespace std;
+
+const int N=1e5+10;
+
+int n,m;
+int h[N],w[N],e[N],ne[N],idx;
+int dist[N];
+bool st[N];
+
+void add(int a,int b,int c){
+    e[idx]=b;w[idx]=c;ne[idx]=h[a];h[a]=idx++;
+}
+
+int spfa(){
+    memset(dist,0x3f,sizeof dist);
+    dist[1]=0;
+
+    queue<int> q;
+    q.push(1);
+    st[1]=true;
+
+    while(q.size()){
+        int t=q.front();
+        q.pop();
+
+        st[t]=false;
+
+        for(int i=h[t];i!=-1;i=ne[i]){
+            int j=e[i];
+
+            if(dist[j]>dist[t]+w[i]){
+                dist[j]=dist[t]+w[i];
+                if(!st[j]){
+                    q.push(j);
+                    st[j]=true;
+                }
+            }
+        }
+    }
+
+    if(dist[n]=0x3f3f3f3f) return -1;
+    return dist[n];
+}
+
+int main(){
+
+    scanf("%d%d",&n,&m);
+
+    memset(h,-1,sizeof h);
+
+    while(m--){
+        int a,b,c;
+        scanf("%d%d%d",&a,&b,&c);
+        add(a,b,c);
+    }
+
+    int t=spfa();
+
+    if(t==-1) puts("impossible");
+    else printf("%d\n",t);
+
+    return 0;
+}
+```
+
+
+
+### 多源汇最短路
+
+#### Floyd算法
+
+###### 原理
+
+时间复杂度：O(n^3)
+
+用邻接矩阵存储
+
+不适用场景：不允许有负权环
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N=210,INF=1e9;
+
+int n,m,Q;
+int d[N][N];
+
+void floyd(){
+    for(int k=1;k<=n;k++){
+        for(int i=1;i<=n;i++){
+            for(int j=1;j<=n;j++){
+                d[i][j]=min(d[i][j],d[i][k]+d[k][j]);
+            }
+        }
+    }
+}
+
+int main(){
+    scanf("%d%d%d",&n,&m,&Q);
+
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=n;j++){
+            if(i==j) d[i][j]=0;
+            else d[i][j]=INF;
+        }
+    }
+
+    while(m--){
+        int a,b,w;
+        scanf("%d%d%d",&a,&b,&w);
+
+        if(d[a][b] > INF/2) puts("impossible");
+        else d[a][b]=min(d[a][b],w);
+    }
+
+    floyd();
+
+    while(Q--){
+        int a,b;
+        scanf("%d%d",&a,&b);
+        printf("%d\n",d[a][b]);
+    }
+
+    return 0;
+}
+```
+
