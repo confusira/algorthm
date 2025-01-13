@@ -811,3 +811,252 @@ int main(){
 }
 ```
 
+
+
+## 最小生成树
+
+主要应用场景：无向图，城市铺路问题
+
+### 普利姆算法（Prim）
+
+#### 朴素普利姆算法
+
+###### 原理
+
+时间复杂度：O(n^2)  适合稠密图
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N=510,INF=0x3f3f3f3f;
+
+int n,m;
+int g[N][N];
+int dist[N];
+bool st[N];
+
+int prim(){
+    memset(dist,0x3f,sizeof dist);
+
+    int res=0;
+    for(int i=0;i<n;i++){
+        int t=-1;
+        for(int j=1;j<=n;j++){
+            if(!st[j] && (t==-1 || dist[t]>dist[j])){
+                t=j;
+            }
+        }
+
+        if(i && dist[t]==INF) return INF;
+        if(i) res+=dist[t];
+
+        for(int j=1;j<=n;j++) dist[j]=min(dist[j],g[t][j]);
+
+        st[t]=true;
+    }
+
+    return res;
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    memset(g,0x3f,sizeof g);
+
+    while(m--){
+        int a,b,c;
+        scanf("%d%d%d",&a,&b,&c);
+        g[a][b]=g[b][a]=min(g[a][b],c);
+    }
+
+    int t=prim();
+
+    if(t==INF) puts("impossible");
+    else printf("%d\n",t);
+
+    return 0;
+}
+```
+
+
+
+#### 堆优化版的普利姆算法
+
+###### 原理
+
+时间复杂度：O(mlogn)  适合稀疏图
+
+### 克鲁斯卡尔算法（Kruskal）
+
+###### 原理
+
+时间复杂度：O(mlogm)  适合稀疏图
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N =2e4+5;
+
+int n,m;
+int p[N];
+
+struct Edge{
+    int a,b,w;
+
+    bool operator< (const Edge &W)const{
+        return w<W.w;
+    }
+}edges[N];
+
+int find(int x){
+    if(p[x]!=x) p[x]=find(p[x]);
+
+    return p[x];
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    for(int i=0;i<m;i++){
+        int a,b,w;
+        scanf("%d%d%d",&a,&b,&w);
+        edges[i]={a,b,w};
+    }
+
+    sort(edges,edges+m);
+
+    for(int i=1;i<=m;i++) p[i]=i;
+
+    int res=0,cnt=0;
+    for(int i=0;i<m;i++){
+        int a=edges[i].a,b=edges[i].b,w=edges[i].w;
+
+        a=find(a),b=find(b);
+
+        if(a!=b){
+            p[a]=b;
+            res+=w;
+            cnt++;
+        }
+    }
+
+    if(cnt<n-1) puts("impossible");
+    else printf("%d\n",res);
+
+    return 0;
+}
+```
+
+## 二分图
+
+###### 简介
+
+图中的点可以被划分为两个集合，集合内的点不存在边，边仅存在于集合之间
+
+### 染色法
+
+###### 原理
+
+判断一个图是否是二分图
+
+一个图是二分图当且仅当图中不含奇数环（环中边的个数为奇数）
+
+时间复杂度：O(n+m)
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1e5+10,M=2e5+10;
+
+int n,m;
+int h[N],e[M],ne[M],idx;
+int color[N];
+bool st[N];
+
+void add(int a,int b){
+    e[idx]=b;ne[idx]=h[a];h[a]=idx++;
+}
+
+bool dfs(int u,int c){
+    color[u]=c;
+
+    for(int i=h[u];i!=-1;i=ne[i]){
+        int j=e[i];
+        if(!color[j]){
+            if(!dfs(j,3-c)) return false;
+        }
+        else if(color[j]==c) return false;
+    }
+
+    return true;
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    memset(h,-1,sizeof h);
+
+    while(m--){
+        int a,b;
+        scanf("%d%d",&a,&b);
+        add(a,b),add(b,a);
+    }
+
+    bool flag=true;
+    for(int i=1;i<=n;i++) {
+        if(!color[i]){
+            if(!dfs(i,1)){
+                flag=false;
+                break;
+            }
+        }
+    }
+
+    if(flag) puts("YES");
+    else puts("NO");
+
+    return 0;
+}
+```
+
+### 匈牙利算法
+
+###### 原理
+
+二分图匹配
+
+时间复杂度：O(mn) 实际运行时间远远小于这个
+
+
+
+
+
+###### 模板代码
+
+```
+
+```
+
