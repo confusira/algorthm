@@ -315,9 +315,119 @@ int gcd(int a,int b){
 
 
 
+#### 欧拉函数
+
+###### 原理
+
+欧拉函数：1-n中与n互质的数的个数
+$$
+\phi(n)=n*(1-p_1^{-1})(1-p_2^{-1})...(1-p_k^{-1})
+$$
+方法：
+
+（1）分解质数求欧拉函数 
+
+适合单个求解，时间复杂度：O(sqrt(n))
+
+（2）筛法求欧拉函数
+
+适合多个求解，时间复杂度：O(n)
+
+
+
+###### 模板代码
+
+分解质数求法
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+int main(){
+    int n;
+    cin >> n;
+
+    while(n--){
+        int a;
+        cin >> a;
+        
+        int res=a;
+        for(int i=2;i<=a/i;i++){
+            if(a%i==0){
+                res=res/i*(i-1);
+                while(a%i==0) a/=i;
+            }
+        }
+        if(a>1) res=res/a*(a-1);
+
+        cout << res << endl;
+    }
+
+    return 0;
+}
+```
+
+
+
+筛法求法
+
+```c++
+const int N=1e6+10;
+
+typedef long long ll;
+
+int primes[N],cnt;
+int phi[N];
+bool st[N];
+
+ll get_eulers(int n){
+    phi[1]=1;
+
+    for(int i=2;i<=n;i++){
+        if(!st[i]){
+            primes[cnt++]=i;
+            phi[i]=i-1;
+        }
+
+        for(int j=0;primes[j]<=n/i;j++){
+            st[primes[j]*i]=true;
+            if(i%primes[j]==0){
+                phi[primes[j]*i]=phi[i]*primes[j]; //phi[primes[j]*i]和phi[i]质因数相同，仅原数不同
+                break;
+            }
+            phi[primes[j]*i]=phi[i]*(primes[j]-1);
+        }
+    }
+
+    ll res=0;
+    for(int i=1;i<=n;i++) res+=phi[i];
+    return res;
+}
+
+int main(){
+    int n;
+    cin >> n;
+
+    cout << get_eulers(n) << endl;
+
+    return 0;
+}
+```
+
+
+
+欧拉定理与费马定理
+$$
+若a与n互质，则a^{\phi(n)} \equiv 1(mod~n)\\
+若p为质数，a^{\phi(p)}=a^{p-1} \equiv 1(mod~p)
+$$
+
+
 ## 组合计数
 
-
+#### 
 
 
 
