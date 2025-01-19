@@ -503,6 +503,14 @@ $$
 
 （2）状态计算
 
+可以划分为第i个字母和第j个字母是否包含在最长公共子序列中
+
+包括00，01，10，11四种可能
+
+`f[i-1,j-1],f[i-1,j],f[i,j-1],f[i-1,j-1]+1`
+$$
+f[i][j]=max(f[i][j-1],f[i-1][j],(f[i-1][j-1]+1~~a[i]==b[j]))
+$$
 
 
 
@@ -592,22 +600,99 @@ int main(){
 }
 ```
 
+最长公共子序列
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1010;
+
+int n,m;
+char a[N],b[N];
+int f[N][N];
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    scanf("%s%s",a+1,b+1);
+
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=m;j++){
+            f[i][j]=max(f[i-1][j],f[i][j-1]);
+            if(a[i]==b[j]) f[i][j]=max(f[i][j],f[i-1][j-1]+1);
+        }
+    }
+
+    printf("%d\n",f[n][m]);
+
+    return 0;
+}
+```
+
 
 
 ### 区间DP
 
 ###### 描述
 
-
+状态表示的是一个区间
 
 ###### 原理
 
+合并石子
+
+（1）状态表示 `f[i,j]`
+
+集合：所有将从第`i`堆石子到第`j`堆石子合并成一堆石子的合并方式
+
+属性：最小值
+
+（2）状态计算
+
+可以以最后一次合并的分界线进行划分`f[i,k]+f[k+1,j]`
+$$
+f[i][j]=min(f[i][k]+f[k+1][j]+sum[j]-sum[i-1])~~k=i,i+1,...,j-1
+$$
 
 
 ###### 模板代码
 
-```
+```c++
+#include<iostream>
+#include<algorithm>
 
+using namespace std;
+
+const int N =310;
+
+int n;
+int s[N];
+int f[N][N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=1;i<=n;i++) scanf("%d",&s[i]);
+
+    for(int i=1;i<=n;i++) s[i]=s[i-1]+s[i];
+
+    for(int len=2;len<=n;len++){
+        for(int i=1;i+len-1<=n;i++){
+            int l=i,r=i+len-1;
+            f[l][r]=1e8;
+            for(int k=l;k<r;k++){
+                f[l][r]=min(f[l][r],f[l][k]+f[k+1][r]+s[r]-s[l-1]);
+            }
+        }
+    }
+
+    printf("%d\n",f[1][n]);
+
+    return 0;
+}
 ```
 
 
@@ -634,9 +719,53 @@ int main(){
 
 ###### 描述
 
-
+统计某个数字出现了多少次（不同位数出现算两次）
 
 ###### 原理
+
+分情况讨论
+
+``[a,b],0-9`
+
+`count(n,x)` ，`1-n`中`x`出现的次数
+$$
+res=count(b,x)-count(a-1,x)
+$$
+以1为例
+
+`n=abcdefg`
+
+枚举1在每一位上出现的次数
+
+枚举1在第四位上出现的次数
+
+`1<=xxx1yyy<=abcdefg`
+
+（1）`xxx=000-abc-1,yyy=000-999,abc*1000`
+
+（2）`xxx=abc`
+
+​			（2.1）`d<1,abc1yyy>abc0efg,0`
+
+​			（2.2）`d=1,yyy=000-efg,efg+1`
+
+​			（2.3）`d>1,yyy=000-999,1000`
+
+
+
+枚举0在第四位上出现的次数
+
+`1<=xxx1yyy<=abcdefg`
+
+（1）`xxx=000-abc-1,yyy=000-999,abc*1000`
+
+（2）`xxx=abc`
+
+​			（2.1）`d<1,abc1yyy>abc0efg,0`
+
+​			（2.2）`d=1,yyy=000-efg,efg+1`
+
+​			（2.3）`d>1,yyy=000-999,1000`
 
 
 
@@ -652,16 +781,84 @@ int main(){
 
 ###### 描述
 
-
+将状态的整数表示看成是二进制数表示
 
 ###### 原理
 
+蒙德里安的梦想
+$$
+f[i][j]+=f[i-1][k]\\
+j \& k==0~~且~~j|k不存在连续奇数个0
+$$
+最短Hamilton路径
+
+（1）状态表示 `f[i,j]`
+
+集合：所有从0走到`j`，走过的所有点是`i`的所有路径
+
+属性：最小值
+
+（2）状态计算
+
+划分为倒数第二点的路径长度
+
+`0-k-j,k=0,1,..,n-1`
+$$
+f[i][j]=min(f[i-\{j\}][k]+a[k][j])~~k=0,1,...,n-1
+$$
 
 
 ###### 模板代码
 
-```
+蒙德里安的梦想
 
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+
+using namespace std;
+
+const int N =12,M=1<<N;
+
+int n,m;
+int f[N][M];
+bool st[M];
+
+int main(){
+    while(cin >> n >>m,n||m){
+        memset(f,0,sizeof f);
+
+        for(int i=0;i<1<<n;i++){
+            st[i]=true;
+            int cnt=0;
+            for(int j=0;j<n;j++){
+                if(i>>j&1){
+                    if(cnt&1)st[i]=false;
+                    cnt=0;
+                }
+                else cnt++;
+            }
+
+            if(cnt&1)st[i]=false;
+        }
+
+        f[0][0]=1;
+        for(int i=1;i<=m;i++){
+            for(int j=0;j<1<<n;j++){
+                for(int k=0;k<1<<n;k++){
+                    if((j&k)==0 && st[j|k]){
+                        f[i][j]+=f[i-1][k];
+                    }
+                }
+            }
+        }
+
+        cout << f[m][0] << endl;
+    }
+
+    return 0;
+}
 ```
 
 
@@ -673,6 +870,8 @@ int main(){
 
 
 ###### 原理
+
+
 
 
 

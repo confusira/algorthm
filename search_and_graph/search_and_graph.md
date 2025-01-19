@@ -282,7 +282,7 @@ DFS
 
 ```c++
 void dfs(int u){
-    st[u]==true;
+    st[u]=true;
 
     for(int i=h[u];i!=-1;i=ne[i]){
         int j=e[i];
