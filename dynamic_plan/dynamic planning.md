@@ -16,6 +16,8 @@
 
 往往是对动态规划的代码或者方程做一个等价变形
 
+（4）时间复杂度计算：状态量乘转移数量
+
 
 
 ## 背包问题
@@ -405,8 +407,42 @@ $$
 
 ###### 模板代码
 
-```
+```c++
+#include<iostream>
+#include<algorithm>
 
+using namespace std;
+
+const int N =110;
+
+int n,m;
+int v[N][N],w[N][N],s[N];
+int f[N];
+
+int main(){
+    cin >> n >> m;
+
+    for(int i=1;i<=n;i++){
+        cin >> s[i];
+        for(int j=0;j<s[i];j++){
+            cin >> v[i][j] >> w[i][j];
+        }
+    }
+
+    for(int i=1;i<=n;i++){
+        for(int j=m;j>=0;j--){
+            for(int k=0;k<s[i];k++){
+                if(v[i][k]<=j){
+                    f[j]=max(f[j],f[j-v[i][k]]+w[i][k]);
+                }
+            }
+        }
+    }
+
+    cout << f[m] << endl;
+
+    return 0;
+}
 ```
 
 
@@ -415,32 +451,252 @@ $$
 
 ### 线性DP
 
+###### 描述
 
+枚举顺序是一个线性的顺序
+
+包括背包问题，数字三角形问题
+
+
+
+###### 原理
+
+1、数字三角形
+
+（1）状态表示 `f[i,j]`
+
+集合：所有从起点走到`（i，j）`的路径
+
+属性：最大值
+
+（2）状态计算
+
+状态可以划分为来自左上方`f[i-1,j-1]+a[i,j]`和右上方`f[i-1,j]+a[i,j]`
+$$
+f[i,j]=max(f[i-1,j-1]+a[i,j],f[i-1,j]+a[i,j])
+$$
+
+
+2、最长上升子序列
+
+（1）状态表示 `f[i]`
+
+集合：所有以第i个数结尾的上升子序列
+
+属性：最大值
+
+（2）状态计算
+
+状态可以划分为来自以第k个数结尾的子序列的长度`f[k]`加上1的最大值
+$$
+f[i]=max(f[k]+1)~~,k=0,1,...,i-1
+$$
+
+
+3、最长公共子序列
+
+（1）状态表示  `f[i,j]`
+
+集合：所有由第一个序列的前`i`个字母出现的，且第二个序列的前`j`个字母出现的公共子序列
+
+属性：最大值
+
+（2）状态计算
+
+
+
+
+
+###### 模板代码
+
+数字三角形
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=510,INF=1e9;
+
+int n;
+int a[N][N];
+int f[N][N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=i;j++){
+            scanf("%d",&a[i][j]);
+        }
+    }
+
+    for(int i=0;i<=n;i++){
+        for(int j=0;j<=i+1;j++){
+            f[i][j]=-INF;
+        }
+    }
+
+    f[1][1]=a[1][1];
+
+    for(int i=2;i<=n;i++){
+        for(int j=1;j<=i;j++){
+            f[i][j]=max(f[i-1][j-1]+a[i][j],f[i-1][j]+a[i][j]);
+        }
+    }
+
+    int res=-INF;
+    for(int i=1;i<=n;i++){
+        res=max(res,f[n][i]);
+    }
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
+最长上升子序列
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1010;
+
+int n;
+int a[N],f[N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=1;i<=n;i++) scanf("%d",&a[i]);
+
+    for(int i=1;i<=n;i++){
+        f[i]=1;
+        for(int j=1;j<i;j++){
+            if(a[j]<a[i]) f[i]=max(f[i],f[j]+1);
+        }
+    }
+
+    int res=0;
+
+    for(int i=1;i<=n;i++) res=max(res,f[i]);
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
 
 
 
 ### 区间DP
 
+###### 描述
 
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
 
 
 
 ### 计数类DP
 
+###### 描述
 
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
 
 
 
 ### 数位统计DP
 
+###### 描述
+
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
+
 
 
 ### 状态压缩DP
+
+###### 描述
+
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
 
 
 
 ### 树形DP
 
+###### 描述
+
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
+
 
 
 ### 记忆化搜索
+
+###### 描述
+
+
+
+###### 原理
+
+
+
+###### 模板代码
+
+```
+
+```
+
