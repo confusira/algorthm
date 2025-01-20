@@ -684,3 +684,272 @@ int find(int x){
 
 
 ## 区间合并
+
+
+
+
+
+## 贪心算法
+
+### 区间问题
+
+###### 原理
+
+如何证明
+
+`ans=cnt  (1)ans<=cnt  (2)ans>=cnt`
+
+1、区间选点
+
+步骤：
+
+（1）将每个区间按右端点从小到大排序
+
+（2）从前往后依次枚举每个区间
+
+​			如果当前区间中已经包含点，则直接pass
+
+​			否则，选择当前区间的右端点
+
+
+
+2、最大不相交区间数量
+
+（1）将每个区间按右端点从小到大排序
+
+（2）从前往后依次枚举每个区间
+
+​			如果当前区间中已经包含点，则直接pass
+
+​			否则，选择当前区间的右端点
+
+
+
+3、区间分组
+
+（1）将所有区间按左端点从小到大排序
+
+（2）从前往后处理每个区间
+
+​			判断能否将其放到某个现有的组中  `L[i]>max_r`
+
+​					（2.1）如果不存在这样的组，则开新组，然后再将其放进去
+
+​					（2.2）如果存在这样的组，将其放进去，再更新当前组的`max_r`
+
+
+
+4、区间覆盖
+
+（1）将所有区间按左端点从小到大排序
+
+（2）从前往后依次枚举每个区间，在所有能覆盖start的区间中，选择右端点最大的区间，然后将start更新成右端点的最大值
+
+
+
+###### 模板代码
+
+区间选点、最大不相交区间数量
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N = 1e5+10;
+
+int n;
+struct Range{
+    int l,r;
+    bool operator< (const Range &W)const{
+        return r<W.r;
+    } 
+}range[N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=0;i<n;i++){
+        int l,r;
+        scanf("%d%d",&l,&r);
+        range[i]={l,r};
+    }
+
+    sort(range,range+n);
+
+    int res=0,ed=-2e9;
+
+    for(int i=0;i<n;i++){
+        if(range[i].l>ed){
+            res++;
+            ed=range[i].r;
+        }
+    }
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
+
+
+区间分组
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<queue>
+
+using namespace std;
+
+const int N=100010;
+
+int n;
+struct Range{
+    int l,r;
+    bool operator<(const Range &W)const{
+        return l<W.l;
+    } 
+}range[N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=0;i<n;i++){
+        int a,b;
+        scanf("%d%d",&a,&b);
+        range[i]={a,b};
+    }
+
+    sort(range,range+n);
+
+    priority_queue<int,vector<int>,greater<int>> heap;
+
+    for(int i=0;i<n;i++){
+        auto r=range[i];
+        if(heap.empty() || heap.top()>=r.l){
+            heap.push(r.r);
+        }
+        else{
+            int t=heap.top();
+            heap.pop();
+            heap.push(r.r);
+        }
+    }
+
+    printf("%d\n",heap.size());
+    
+    return 0;
+}
+```
+
+
+
+区间覆盖
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N =100010;
+
+int n;
+struct Range{
+    int l,r;
+    bool operator<(const Range& W)const{
+        return l<W.l;
+    }
+}range[N];
+
+int main(){
+    int st,ed;
+    scanf("%d%d",&st,&ed);
+    scanf("%d",&n);
+
+    for(int i=0;i<n;i++){
+        int l,r;
+        scanf("%d%d",&l,&r);
+        range[i]={l,r};
+    }
+
+    sort(range,range+n);
+
+    int res=0;
+    bool success=false;
+    for(int i=0;i<n;i++){
+        int j=i,r=-2e9;
+        while(j<n && range[j].l<=st){
+            r=max(r,range[j].r);
+            j++;
+        }
+
+        if(r<st){
+            res=-1;
+            break;
+        }
+
+        res++;
+
+        if(r>=ed){
+            success=true;
+            break;
+        } 
+
+        st=r;
+
+        i=j-1;
+    }
+
+    if(!success) res=-1;
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
+
+
+### Huffman树
+
+###### 原理
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<queue>
+
+using namespace std;
+
+int main(){
+    int n;
+    scanf("%d",&n);
+
+    priority_queue<int,vector<int>,greater<int>> heap;
+    while(n--){
+        int x;
+        scanf("%d",&x);
+        heap.push(x);
+    }
+
+    int res=0;
+    while(heap.size()>1){
+        int a=heap.top();heap.pop();
+        int b=heap.top();heap.pop();
+        res+=a+b;
+        heap.push(a+b);
+    }
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
