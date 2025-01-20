@@ -755,9 +755,9 @@ $$
 
 枚举0在第四位上出现的次数
 
-`1<=xxx1yyy<=abcdefg`
+`1<=xxx0yyy<=abcdefg`
 
-（1）`xxx=000-abc-1,yyy=000-999,abc*1000`
+（1）`xxx=001-abc-1,yyy=000-999,abc*1000`
 
 （2）`xxx=abc`
 
@@ -771,8 +771,67 @@ $$
 
 ###### 模板代码
 
-```
+```c++
+#include<iostream>
+#include<algorithm>
+#include<vector>
 
+using namespace std;
+
+int get(vector<int> num,int l,int r){
+    int res=0;
+    for(int i=l;i>=r;i--){
+        res=res*10+num[i];
+    }
+    return res;
+}
+
+int power10(int x){
+    int res=1;
+    while(x--) res*=10;
+    return res;
+}
+
+int count(int n,int x){
+    if(!n) return 0;
+
+    vector<int> num;
+
+    while(n){
+        num.push_back(n%10);
+        n/=10;
+    }
+
+    n=num.size();
+
+    int res=0;
+
+    for(int i=n-1-!x;i>=0;i--){
+        if(i<n-1){
+            res+=get(num,n-1,i+1)*power10(i);
+            if(!x) res-=power10(i);
+        }
+
+        if(num[i]==x) res+=get(num,i-1,0)+1;
+        else if(num[i]>x) res+=power10(i);
+    }
+
+    return res;
+}
+
+int main(){
+    int a,b;
+
+    while(cin >> a >> b,a||b){
+        if(a>b) swap(a,b);
+        for(int i=0;i<10;i++){
+            cout << count(b,i)-count(a-1,i) << ' ';
+        }
+        cout << endl;
+    }
+
+    return 0;
+}
 ```
 
 
@@ -861,24 +920,135 @@ int main(){
 }
 ```
 
+最短Hamilton路径
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+
+using namespace std;
+
+const int N = 20, M=1<<N;
+
+int n;
+int w[N][N];
+int f[M][N];
+
+int main(){
+    cin >> n;
+    for(int i=0;i<n;i++){
+        for(int j=0;j<n;j++){
+            cin >> w[i][j];
+        }
+    }
+
+    memset(f,0x3f,sizeof f);
+    f[1][0]=0;
+
+    for(int i=0;i<1<<n;i++){
+        for(int j=0;j<n;j++){
+            if(i>>j&1){
+                for(int k=0;k<n;k++){
+                    if((i-(1<<j))>>k&1){
+                        f[i][j]=min(f[i][j],f[i-(1<<j)][k]+w[k][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    cout << f[(1<<n)-1][n-1] << endl;
+
+    return 0;
+}
+```
+
 
 
 ### 树形DP
 
 ###### 描述
 
-
+在树形结构（非线性结构）中进行动态规划
 
 ###### 原理
 
+没有上司的舞会
 
+（1）状态表示  `f[u,0/1]`
 
+集合：所有以`u`为根的子树中选择，并不选`u`这个点的方案
+
+​			所有以`u`为根的子树中选择，并选`u`这个点的方案
+
+属性：最大值
+
+（2）状态计算
+$$
+s_i是u的子节点\\
+f[u][0]+=max(f[s_i][0],f[s_i][1])\\
+f[u][1]+=f[s_i][0]
+$$
 
 
 ###### 模板代码
 
-```
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
 
+using namespace std;
+
+const int N =6010;
+
+int n;
+int happy[N];
+int h[N],e[N],ne[N],idx;
+int f[N][2];
+bool has_father[N];
+
+void add(int a,int b){
+    e[idx]=b;ne[idx]=h[a];h[a]=idx++;
+}
+
+void dfs(int u){
+    f[u][1]=happy[u];
+
+    for(int i=h[u];i!=-1;i=ne[i]){
+        int j=e[i];
+        dfs(j);
+
+        f[u][0]+=max(f[j][0],f[j][1]);
+        f[u][1]+=f[j][0];
+    }
+}
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=1;i<=n;i++) scanf("%d",&happy[i]);
+
+    memset(h,-1,sizeof h);
+
+    for(int i=0;i<n-1;i++){
+        int a,b;
+        scanf("%d%d",&a,&b);
+
+        has_father[a]=true;
+        add(b,a);
+    }
+
+    int root=1;
+    while(has_father[root]) root++;
+
+    dfs(root);
+
+    printf("%d\n",max(f[root][0],f[root][1]));
+
+    return 0;
+}
 ```
 
 
@@ -887,15 +1057,77 @@ int main(){
 
 ###### 描述
 
-
+递归实现的动态规划（好想，好写，比循环运行的慢些，可能会栈溢出）
 
 ###### 原理
+
+滑雪
+
+（1）状态表示  `f[i,j]`
+
+集合：所有从`(i,j)`开始滑的路径
+
+属性：最大值
+
+（2）状态计算
+
+状态来源于四个方向
 
 
 
 ###### 模板代码
 
-```
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
 
+using namespace std;
+
+const int N=310;
+
+int n,m;
+int h[N][N];
+int f[N][N];
+
+int dx[4]={-1,0,1,0},dy[4]={0,-1,0,1};
+
+int dp(int x,int y){
+    int &v=f[x][y];
+    if(v!=-1) return v;
+
+    v=1;
+    for(int i=0;i<4;i++){
+        int a=x+dx[i],b=y+dy[i];
+        if(a>=1 && a<-n && b>=1 && b<= m && h[a][b]<h[x][y]){
+            v=max(v,dp(a,b)+1);
+        }
+    }
+
+    return v;
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=m;j++){
+            scanf("%d",&h[i][j]);
+        }
+    }
+
+    memset(f,-1,sizeof f);
+
+    int res=0;
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=m;j++){
+            res=max(res,dp(i,j));
+        }
+    }
+
+    printf("%d\n",res);
+
+    return 0;
+}
 ```
 
