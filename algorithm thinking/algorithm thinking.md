@@ -953,3 +953,145 @@ int main(){
 }
 ```
 
+
+
+### 排序不等式
+
+###### 原理
+
+调整法和反证法
+$$
+S_{顺}<S_{随意}<S_{逆}
+$$
+排队打水
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+
+const int N = 100010;
+
+int n;
+int t[N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=0;i<n;i++) scanf("%d",&t[i]);
+
+    sort(t,t+n);
+
+    LL res=0;
+    for(int i=0;i<n;i++) res+=t[i]*(n-i-1);
+
+    printf("%lld\n",res);
+
+    return 0;
+}
+```
+
+
+
+### 绝对值不等式
+
+###### 原理
+
+$$
+|x_1-x|+|x_2-x|+...+|x_n-x|>=x_n+x_{n-1}+...-x_2-x_1
+$$
+
+货仓选址
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N =100010;
+
+int n;
+int a[N];
+
+int main(){
+    scanf("%d",&n);
+
+    for(int i=0;i<n;i++) scanf("%d",&a[i]);
+
+    sort(a,a+n);
+
+    int res=0;
+
+    for(int i=0;i<n;i++){
+        res+=abs(a[i]-a[n/2]);
+    }
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
+
+
+### 推公式
+
+###### 原理
+
+牛牛叠罗汉
+
+按照`wi+si`从小到大的顺序排，最大的危险系数一定是最小的
+
+
+
+###### 模板代码
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef pair<int,int> PII;
+
+const int N =100010;
+
+int n;
+PII cow[N];
+
+int main(){
+    scanf("%d",&n);
+    for(int i=0;i<n;i++){
+        int w,s;
+        scanf("%d%d",&w,&s);
+        cow[i]={w+s,w};
+    }
+
+    sort(cow,cow+n);
+
+    int res=-2e9,sum=0;
+
+    for(int i=0;i<n;i++){
+        int w=cow[i].second,s=cow[i].first-w;
+        res=max(res,sum-s);
+        sum+=w;
+    } 
+
+    printf("%d\n",res);
+
+    return 0;
+}
+```
+
