@@ -412,6 +412,10 @@ if(belong[x]==belong[y])  O(1)
 
 ###### 模板代码
 
+重点
+
+p[x]及初始化、find函数、合并与查询
+
 ```c++
 #include<iostream>
 
