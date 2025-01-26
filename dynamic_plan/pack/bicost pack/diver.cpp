@@ -3,7 +3,7 @@
 
 using namespace std;
 
-const int N =50,M =160;
+const int N =22,M =80;
 
 int n,m,K;
 int f[N][M];
@@ -19,22 +19,14 @@ int main(){
         int v1,v2,w;
         cin >> v1 >> v2 >> w;
 
-        for(int i=N-1;i>=v1;i--){
-            for(int j=M-1;j>=v2;j--){
-                f[i][j]=min(f[i][j],f[i-v1][j-v2]+w);
+        for(int j=n;j>=0;j--){
+            for(int k=m;k>=0;k--){
+                f[j][k]=min(f[j][k],f[max(0,j-v1)][max(0,k-v2)]+w);
             }
         }
     }
 
-    int res=0x3f3f3f3f;
-
-    for(int i=n;i<N;i++){
-        for(int j=m;j<M;j++){
-            res=min(res,f[i][j]);
-        }
-    }
-
-    cout << res << endl;
+    cout << f[n][m] << endl;
 
     return 0;
 }
