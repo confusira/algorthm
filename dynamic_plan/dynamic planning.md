@@ -470,8 +470,6 @@ $$
 
 
 
-
-
 ###### 模板代码
 
 ```c++
@@ -524,13 +522,68 @@ int main(){
 
 ###### 原理
 
+（1）状态表示  `f[i,j]`
+
+集合：只从前`i`件物品中选，且总体积不超过`j`的选法
+
+属性：最大值
+
+（2）状态计算
+
+01背包，完全背包，多重背包分别计算
+$$
+01背包~~f[i][j]=max(f[i-1][j],f[i-1][j-v_i]+w_i)\\
+完全背包~~f[i][j]=max(f[i-1][j],f[i][j-v_i]+w_i)\\
+多重背包~~f[i][j]=max(f[i-1][j],f[i-1][j-v_i]+w_i,f[i-1][j-2*v_i]+2*w_i,...)
+$$
 
 
 ###### 模板代码
 
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
 
+using namespace std;
 
-### 有依赖背包
+const int N = 1010;
+
+int n,m;
+int f[N];
+
+int main(){
+    cin >> n >> m;
+
+    for(int i = 0; i < n; i++){
+        int v,w,s;
+        cin >> v >> w >> s;
+        if(s==0){
+            for(int j=v;j<=m;j++) f[j] = max(f[j],f[j-v]+w);
+        }
+        else{
+            if(s==-1) s=1;
+            for(int k=1;k<=s;k*=2){
+                for(int j=m;j>=k*v;j--){
+                    f[j] = max(f[j],f[j-k*v]+k*w);
+                }
+                s-=k;
+            }
+            if(s){
+                for(int j=m;j>=s*v;j--){
+                    f[j] = max(f[j],f[j-s*v]+s*w);
+                }
+            }
+        }
+    }
+
+    cout << f[m] << endl;
+
+    return 0;
+}
+```
+
+### 依赖背包
 
 ###### 描述
 
@@ -540,15 +593,80 @@ int main(){
 
 ###### 原理
 
+（1）状态表示  `f[u,j]`
+
+集合：所有以`u`为根的子树中选，且总体积不超过`j`的方案
+
+属性：最大值
+
+（2）状态计算
+
+递归方法
+
 
 
 - **选课**
 
 
 
+
+
 ###### 模板代码
 
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
 
+using namespace std;
+
+const int N = 110;
+
+int n,m;
+int v[N],w[N];
+int h[N],e[N],ne[N],idx;
+int f[N][N];
+
+void add(int a,int b){
+    e[idx] = b,ne[idx] = h[a],h[a] = idx++;
+}
+
+int dfs(int u){
+    for(int i=h[u];i!=-1;i=ne[i]){
+        int son = e[i];
+        dfs(son);
+
+        for(int j=m-v[u];j>=0;j--){
+            for(int k=0;k<=j;k++){
+                f[u][j] = max(f[u][j],f[u][j-k]+f[son][k]);
+            }
+        }
+    }
+
+    for(int i=m;i>=v[u];i--) f[u][i]=f[u][i-v[u]]+w[u];
+    for(int i=0;i<v[u];i++) f[u][i] = 0;
+}
+
+int main(){
+    cin >> n >> m;
+
+    memset(h,-1,sizeof h);
+    int root;
+
+    for(int i = 1;i <= n;i++){
+        int p;
+        cin >> v[i] >> w[i] >> p;
+        if(p==-1) root = i;
+        else add(p,i);
+    }
+
+    dfs(root);
+
+    cout << f[root][m] << endl;
+
+    return 0;
+}
+```
 
 ### 二维费用背包
 
@@ -693,7 +811,15 @@ int main(){
 
 ###### 原理
 
-**（1）求方案数**
+**1、求方案数**
+$$
+f[i][j]=max(f[i-1][j],f[i-1][j-v_i]+w_i)\\
+g[i][j] 表示f[i][j]取最大值的方案数\\
+左边大~~g[i][j]=g[i-1][j]\\
+右边大~~g[i][j]=g[i-1][j-v_i]\\
+左右一样大~~g[i][j]=g[i-1][j]+g[i-1][j-v_i]
+$$
+
 
 - **数字组合**
 
@@ -732,6 +858,8 @@ f[i][j]=f[i-1][j]+\Sigma_{k=1}^{s_i} f[i-1][j-v_i*k]\\
 $$
 
 
+
+
 - **货币系统**
 
 完全背包
@@ -742,9 +870,15 @@ $$
 
 完全背包+贪心
 
+性质1：`a1,a2,...,an`一定都可以被表达出来
+
+性质2：在最优解中，`b1,b2,..,bm`，一定都是从`a1,a2,...,an`中选择的
+
+性质3：`b1,b2,...,bm`一定不能被其他`bi`表示出来
 
 
-**（2）求具体方案**
+
+**2、求具体方案**
 
 对应图论的最短路问题求最短路径
 
@@ -773,6 +907,57 @@ $$
 
 
 ###### 模板代码
+
+求方案数
+
+```c++
+#include<iostream>
+#include<cstring>
+
+using namespace std;
+
+const int N = 1010,MOD = 1e9+7;
+
+int n,m;
+int f[N],g[N];
+
+int main(){
+    cin >> n >> m;
+
+    memset(f,-0x3f,sizeof f);
+
+    f[0]=0;
+
+    g[0]=1;
+
+    for(int i=0;i<n;i++){
+        int v,w;
+        cin >> v >> w;
+
+        for(int j=m;j>=v;j--){
+            int maxv=max(f[j],f[j-v]+w);
+            int cnt=0;
+            if(maxv==f[j]) cnt+=g[j];
+            if(maxv==f[j-v]+w) cnt+=g[j-v];
+            g[j]=cnt % MOD;
+            f[j]=maxv;
+        }
+    }
+
+    int res=0;
+    for(int i=0;i<=m;i++) res=max(res,f[i]);
+    int cnt=0;
+    for(int i=0;i<=m;i++) if(f[i]==res) cnt=(cnt+g[i])%MOD;
+
+    cout << cnt << endl;
+
+    return 0;
+}
+```
+
+
+
+求具体方案
 
 ```c++
 #include<iostream>
