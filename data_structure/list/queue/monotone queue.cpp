@@ -1,6 +1,3 @@
-//
-// Created by lenovo on 2024/12/30.
-//
 #include<iostream>
 
 using namespace std;
@@ -17,7 +14,7 @@ int main(){
 
     int hh=0,tt=-1;
     for(int i=0;i<n;i++){
-        if(hh<=tt && i-k+1> q[hh]) hh++;
+        if(hh<=tt && q[hh]<i-k+1) hh++;
         while(hh<=tt && a[q[tt]]>=a[i]) tt--;
         q[++tt]=i;
         if(i>=k-1) printf("%d ",a[q[hh]]);
